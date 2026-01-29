@@ -6,17 +6,25 @@ import net.minecraft.client.settings.KeyBinding;
 import org.lwjgl.input.Keyboard;
 
 import java.util.HashSet;
+import java.util.Set;
 
 public class KeyBindingClearHandler {
+    private static final Set<String> MODID_BLACK_LIST = new HashSet<>();
 
-    private static final HashSet<KeyBinding> keyBlackList = new HashSet<>();
+    private static final HashSet<KeyBinding> KEY_BLACK_LIST = new HashSet<>();
+
+    //TODO: 可配置的MODID名单
+    static {
+        MODID_BLACK_LIST.add("jei");
+        MODID_BLACK_LIST.add("hei");
+    }
 
     public static void clearKeyBindings() {
         GameSettings settings = Minecraft.getMinecraft().gameSettings;
 
         KeyBinding[] keys = settings.keyBindings;
         for (KeyBinding key : keys) {
-            if (keyBlackList.contains(key)) continue;
+            if (KEY_BLACK_LIST.contains(key)) continue;
             settings.setOptionKeyBinding(key, Keyboard.KEY_NONE);
         }
 
@@ -24,12 +32,12 @@ public class KeyBindingClearHandler {
     }
 
     private static void addKeyToBlackList(KeyBinding key) {
-        keyBlackList.add(key);
+        KEY_BLACK_LIST.add(key);
     }
 
     public static void initBlackList() {
         initVanillaBlackList();
-        //TODO: 添加mod黑名单
+        initModKeyToBlackList();
     }
 
     private static void initVanillaBlackList() {
@@ -67,5 +75,18 @@ public class KeyBindingClearHandler {
         // Toolbar
         addKeyToBlackList(settings.keyBindSaveToolbar);
         addKeyToBlackList(settings.keyBindLoadToolbar);
+    }
+
+    private static void initModKeyToBlackList() {
+        KeyBinding[] keys = Minecraft.getMinecraft().gameSettings.keyBindings;
+
+        for (KeyBinding key : keys) {
+            for (String modid : MODID_BLACK_LIST) {
+                if (key.getKeyDescription().contains(modid)) {
+                    addKeyToBlackList(key);
+                    break;
+                }
+            }
+        }
     }
 }
