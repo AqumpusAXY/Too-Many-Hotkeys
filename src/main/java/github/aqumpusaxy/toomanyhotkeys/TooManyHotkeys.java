@@ -1,23 +1,20 @@
 package github.aqumpusaxy.toomanyhotkeys;
 
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = Tags.MOD_ID, name = Tags.MOD_NAME, version = Tags.VERSION)
 public class TooManyHotkeys {
-
-    public static final Logger LOGGER = LogManager.getLogger(Tags.MOD_NAME);
-
-    /**
-     * <a href="https://cleanroommc.com/wiki/forge-mod-development/event#overview">
-     *     Take a look at how many FMLStateEvents you can listen to via the @Mod.EventHandler annotation here
-     * </a>
-     */
     @Mod.EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        LOGGER.info("Hello From {}!", Tags.MOD_NAME);
+    public void printKeyBindings(FMLPostInitializationEvent event) {
+        KeyBindingClearHandler.initBlackList();
     }
 
+    @Mod.EventHandler
+    public void registerCommand(FMLServerStartingEvent event) {
+        ClientCommandHandler.instance.registerCommand(new CommandKeyBindingClear());
+    }
+    //TODO:添加匹配modid的config
 }
