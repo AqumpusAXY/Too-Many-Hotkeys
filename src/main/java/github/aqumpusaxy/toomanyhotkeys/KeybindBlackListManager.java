@@ -3,44 +3,70 @@ package github.aqumpusaxy.toomanyhotkeys;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
-import org.lwjgl.input.Keyboard;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
-public class KeyBindingClearHandler {
+public class KeybindBlackListManager {
+    private static final Set<String> MODID_LIST = new HashSet<>();
     private static final Set<String> MODID_BLACK_LIST = new HashSet<>();
+    private static final Set<KeyBinding> KEY_BLACK_LIST = new HashSet<>();
 
-    private static final HashSet<KeyBinding> KEY_BLACK_LIST = new HashSet<>();
-
-    //TODO: 可配置的MODID名单
-    static {
-        MODID_BLACK_LIST.add("jei");
-        MODID_BLACK_LIST.add("hei");
+    public static Set<String> getModidList() {
+        return MODID_LIST;
     }
 
-    public static void clearKeyBindings() {
-        GameSettings settings = Minecraft.getMinecraft().gameSettings;
-
-        KeyBinding[] keys = settings.keyBindings;
-        for (KeyBinding key : keys) {
-            if (KEY_BLACK_LIST.contains(key)) continue;
-            settings.setOptionKeyBinding(key, Keyboard.KEY_NONE);
-        }
-
-        KeyBinding.resetKeyBindingArrayAndHash();
+    public static Set<String> getModidBlackList() {
+        return MODID_BLACK_LIST;
     }
 
-    private static void addKeyToBlackList(KeyBinding key) {
+    public static Set<KeyBinding> getKeyBlackList() {
+        return KEY_BLACK_LIST;
+    }
+
+    public static boolean addModidToBlackList(String modid) {
+        return MODID_BLACK_LIST.add(modid);
+    }
+
+    public static boolean removeModidFromBlackList(String modid) {
+        return MODID_BLACK_LIST.remove(modid);
+    }
+
+    public static void addKeyToBlackList(KeyBinding key) {
         KEY_BLACK_LIST.add(key);
     }
 
-    public static void initBlackList() {
-        initVanillaBlackList();
-        initModKeyToBlackList();
+    public static void initModidList() {
+        KeyBinding[] keys = Minecraft.getMinecraft().gameSettings.keyBindings;
+
+        for (KeyBinding key : keys) {
+            String namespace = getKeyBindNamespace(key);
+
+            if (namespace != null && !namespace.equals("hotbar")) {
+                MODID_LIST.add(namespace);
+            }
+        }
     }
 
-    private static void initVanillaBlackList() {
+    @Nullable
+    private static String getKeyBindNamespace(KeyBinding key) {
+        String keyDesc = key.getKeyDescription();
+
+        int firstDotIndex = keyDesc.indexOf(".");
+        if (firstDotIndex == -1 || firstDotIndex + 1 >= keyDesc.length()) {
+            return null;
+        }
+
+        int secondDotIndex = keyDesc.indexOf(".", firstDotIndex + 1);
+        if (secondDotIndex == -1) {
+            return null;
+        }
+
+        return keyDesc.substring(firstDotIndex + 1, secondDotIndex);
+    }
+
+    public static void initVanillaBlackList() {
         GameSettings settings = Minecraft.getMinecraft().gameSettings;
 
         // Movement
@@ -75,18 +101,5 @@ public class KeyBindingClearHandler {
         // Toolbar
         addKeyToBlackList(settings.keyBindSaveToolbar);
         addKeyToBlackList(settings.keyBindLoadToolbar);
-    }
-
-    private static void initModKeyToBlackList() {
-        KeyBinding[] keys = Minecraft.getMinecraft().gameSettings.keyBindings;
-
-        for (KeyBinding key : keys) {
-            for (String modid : MODID_BLACK_LIST) {
-                if (key.getKeyDescription().contains(modid)) {
-                    addKeyToBlackList(key);
-                    break;
-                }
-            }
-        }
     }
 }
