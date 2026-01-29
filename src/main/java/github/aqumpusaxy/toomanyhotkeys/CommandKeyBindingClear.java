@@ -8,6 +8,10 @@ import net.minecraft.command.WrongUsageException;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -16,6 +20,7 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
+@Mod.EventBusSubscriber
 public class CommandKeyBindingClear extends CommandBase {
     @Override
     public String getName() {
@@ -50,5 +55,10 @@ public class CommandKeyBindingClear extends CommandBase {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    @SubscribeEvent
+    public static void registerCommand(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        ClientCommandHandler.instance.registerCommand(new CommandKeyBindingClear());
     }
 }
